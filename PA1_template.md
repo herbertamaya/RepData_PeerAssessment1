@@ -34,6 +34,8 @@ hist(data.dailyStepsAvg$steps,main = "Histogram of Total Number of Steps taken e
 
 ![](figure/unnamed-chunk-1-1.png) 
 
+### Mean and Median Calculation
+
 ```r
 mean(data.dailyStepsAvg$steps,na.rm=TRUE)
 ```
@@ -59,7 +61,9 @@ library(ggplot2)
 ggplot(data.intervalAvg,aes(interval,avg_steps)) + geom_line()
 ```
 
-![](figure/unnamed-chunk-2-1.png) 
+![](figure/unnamed-chunk-3-1.png) 
+
+### Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
 
 ```r
 fiveMin.Interval.MaxSteps = arrange(data.intervalAvg,desc(avg_steps))[1,]
@@ -75,14 +79,15 @@ print.data.frame(fiveMin.Interval.MaxSteps)
 
 ```r
 missingValues <- sapply(data, function(x) sum(is.na(x)))
-print(missingValues)
+names(missingValues)[1]="Total missing values"
+print(missingValues[1])
 ```
 
 ```
-##    steps     date interval 
-##     2304        0        0
+## Total missing values 
+##                 2304
 ```
-Filling in the missing values with the mean for the 5-minute interval
+Filling in the missing values with the mean for the 5-minute interval, and creating a new data set.
 
 ```r
 data.noMissing <- 
@@ -99,7 +104,9 @@ data.dailyStepsAvg <- summarize(data.dailyStepsAvg,steps=sum(steps,na.rm=TRUE))
 hist(data.dailyStepsAvg$steps,main = "Histogram of Total Number of Steps taken each day",xlab = "Steps per Day")
 ```
 
-![](figure/unnamed-chunk-5-1.png) 
+![](figure/unnamed-chunk-7-1.png) 
+
+Mean and Median total number of steps taken per day
 
 ```r
 mean(data.dailyStepsAvg$steps,na.rm=TRUE)
@@ -116,24 +123,27 @@ median(data.dailyStepsAvg$steps,na.rm = TRUE)
 ```
 ## [1] 10439
 ```
+
 ###Do these values differ from the estimates from the first part of the assignment? 
 Yes, they slightly differ.
 
 ###What is the impact of imputing missing data on the estimates of the total daily number of steps?
-Imputing missing data increases the amount of 'valid data' for the analysis, thus weighting on the final results.
+Imputing missing data increases the amount of 'valid data' for the analysis, thus slightly weighting on the final results.
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
 ```r
 weekend.labels <- c("Saturday","Sunday")
 day_type.levels <- c("weekend","weekday")
-data.weekdays <- mutate(data.noMissing,day_type = factor(ifelse(weekdays(as.Date(date)) %in% weekend.labels,"weekend","weekday"),levels = day_type.levels))
+data.dayType <- mutate(data.noMissing,day_type = factor(ifelse(weekdays(as.Date(date)) %in% weekend.labels,"weekend","weekday"),levels = day_type.levels))
 
-data.weekdays.intervalAvg <- group_by(data.weekdays,interval,day_type)
-data.weekdays.intervalAvg <- summarize(data.weekdays.intervalAvg,avg_steps=mean(steps,na.rm=TRUE))
+data.dayType.intervalAvg <- group_by(data.dayType,interval,day_type)
+data.dayType.intervalAvg <- summarize(data.dayType.intervalAvg,avg_steps=mean(steps,na.rm=TRUE))
 
-q <- qplot(interval,avg_steps,data=data.weekdays.intervalAvg,facets=.~day_type,geom ="line") + facet_wrap( ~ day_type, nrow=2) 
+q <- qplot(interval,avg_steps,data=data.dayType.intervalAvg,facets=.~day_type,geom ="line") + facet_wrap( ~ day_type, nrow=2) 
 print(q)
 ```
 
-![](figure/unnamed-chunk-6-1.png) 
+![](figure/unnamed-chunk-9-1.png) 
+
+During weekends the distribution of steps across the day seems to be more uniform than weekdays, for which there is a peak of steps from 750 to 1000 interval, follow by a sustantial decrease of steps for the rest of the day, with a small uptick from 1750 to 1900 interval.
